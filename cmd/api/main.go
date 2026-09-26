@@ -4,9 +4,13 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/ShahJabir/golang-monolith-backend/internal/config"
 )
 
 func main() {
+
+	cfg := config.MustLoad()
 
 	mux := http.NewServeMux()
 
@@ -22,12 +26,13 @@ func main() {
 	})
 
 	srv := &http.Server{
-		Addr:         ":8090",
+		Addr:         cfg.Host + ":" + cfg.Port,
 		Handler:      mux,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
 	}
+	log.Printf("server listening on %s in %s environment", srv.Addr, cfg.Env)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
