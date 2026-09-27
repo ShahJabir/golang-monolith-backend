@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Port string
-	Host string
-	Env  string
+	Port         string
+	Host         string
+	Env          string
+	DATABASE_URL string
 }
 
 func MustLoad() Config {
@@ -26,9 +27,14 @@ func MustLoad() Config {
 	if env == "" {
 		panic("ENV environment variable is not set")
 	}
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		panic("DATABASE_URL environment variable is not set")
+	}
 	return Config{
-		Port: port,
-		Host: host,
-		Env:  env,
+		Port:         port,
+		Host:         host,
+		Env:          env,
+		DATABASE_URL: databaseURL,
 	}
 }

@@ -6,24 +6,25 @@ import (
 	"time"
 
 	"github.com/ShahJabir/golang-monolith-backend/internal/config"
+	"github.com/ShahJabir/golang-monolith-backend/internal/db"
+	"github.com/ShahJabir/golang-monolith-backend/internal/handlers"
 )
 
 func main() {
 
 	cfg := config.MustLoad()
+	_, err := db.Connect(cfg.DATABASE_URL)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	log.Printf("Database Connected...")
+
+	log.Println("Starting api server...")
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "hello, world!"}`))
-	})
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "healthy"}`))
-	})
+	mux.HandleFunc("GET /", handlers.Root)
+	mux.HandleFunc("GET /health", handlers.Healthz)
 
 	srv := &http.Server{
 		Addr:         cfg.Host + ":" + cfg.Port,
