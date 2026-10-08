@@ -17,7 +17,7 @@ type listing struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-func List(db *sql.DB) http.HandlerFunc {
+func Listings(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query(
 			`SELECT id, title, description, price, city, created_at
@@ -54,5 +54,42 @@ func List(db *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func ListingDelete(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// Extract the listing ID from the request
+		id := r.PathValue("id")
+		if id == "" {
+			http.Error(w, "Missing listing ID", http.StatusBadRequest)
+			return
+		}
+
+		// Delete the listing from the database
+		result, err := db.Exec(
+			"DELETE FROM listings WHERE id = $1",
+			id,
+		)
+		if err != nil {
+			log.Printf("Error deleting listing: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			log.Printf("Error getting rows affected: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if rowsAffected == 0 {
+			http.Error(w, "Listing not found", http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
