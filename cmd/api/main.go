@@ -21,12 +21,15 @@ func main() {
 
 	log.Println("Starting api server...")
 
+	lh := handlers.NewListingHandler(db)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /", handlers.Root)
 	mux.HandleFunc("GET /health", handlers.Healthz)
-	mux.HandleFunc("GET /listings", handlers.Listings(db))
-	mux.HandleFunc("DELETE /listings/{id}", handlers.ListingDelete(db))
+	mux.HandleFunc("GET /listings", lh.GetAll)
+	mux.HandleFunc("GET /lissting/{id}", lh.Get)
+	mux.HandleFunc("DELETE /listings/{id}", lh.Delete)
 
 	srv := &http.Server{
 		Addr:         cfg.Host + ":" + cfg.Port,
